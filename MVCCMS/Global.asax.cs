@@ -1,4 +1,5 @@
-﻿using MVCCMS.Models;
+﻿using MVCCMS.App_Start;
+using MVCCMS.Models;
 using MVCCMS.Models.ModelBinders;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ namespace MVCCMS
         {
             AreaRegistration.RegisterAllAreas();
             RouteConfig.RegisterRoutes(RouteTable.Routes);
+			AuthDbConfig.RegisterAdmin();
 
 			ModelBinders.Binders.Add(typeof(Post), new PostModelBinder());
         }
