@@ -11,7 +11,9 @@ namespace MVCCMS.Data
 		{
 			using (var db = new CmsContext())
 			{
-				var posts = db.Posts.Where(post =>
+				var posts = db.Posts.Where(p => p.CombinedTags.Contains(tag)).ToList();
+
+				posts = posts.Where(post =>
 				post.Tags.Contains(tag, StringComparer.CurrentCultureIgnoreCase))
 				.ToList();
 
@@ -31,9 +33,12 @@ namespace MVCCMS.Data
 
 		public void Edit(string existingTag, string newTag)
 		{
+
 			using (var db = new CmsContext())
 			{
-				var posts = db.Posts.Where(post => 
+				var posts = db.Posts.Where(p => p.CombinedTags.Contains(existingTag)).ToList();
+
+				posts = posts.Where(post => 
 				post.Tags.Contains(existingTag, StringComparer.CurrentCultureIgnoreCase))
 				.ToList();
 
@@ -56,9 +61,11 @@ namespace MVCCMS.Data
 		{
 			using (var db = new CmsContext())
 			{
-				var posts = db.Posts.Where(post =>
-				post.Tags.Contains(tag, StringComparer.CurrentCultureIgnoreCase))
-				.ToList();
+				var posts = db.Posts.Where(p => p.CombinedTags.Contains(tag)).ToList();
+
+				posts = posts.Where(post => 
+					post.Tags.Contains(tag, StringComparer.CurrentCultureIgnoreCase))
+					.ToList();
 
 				if (!posts.Any())
 				{
@@ -73,7 +80,10 @@ namespace MVCCMS.Data
 		{
 			using (var db = new CmsContext())
 			{
-				return db.Posts.SelectMany(post => post.Tags).Distinct();
+				var tagsCollection = db.Posts.Select(p => p.CombinedTags).ToList();
+				return string.Join(",", tagsCollection).Split(',').Distinct();
+
+				// return db.Posts.ToList().SelectMany(post => post.Tags).Distinct();
 			}
 		}
 	}

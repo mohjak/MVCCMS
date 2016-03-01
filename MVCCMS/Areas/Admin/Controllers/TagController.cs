@@ -7,9 +7,13 @@ using System.Web.Mvc;
 
 namespace MVCCMS.Areas.Admin.Controllers
 {
+	[RouteArea("admin")]
+	[RoutePrefix("tag")]
 	public class TagController : Controller
 	{
 		private readonly ITagRepository _repository;
+
+		public TagController() : this(new TagRepository()) { }
 
 		public TagController(ITagRepository repository)
 		{
@@ -17,6 +21,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Tag
+		[Route("")]
 		public ActionResult Index()
 		{
 			var tags = _repository.GetAll();
@@ -24,12 +29,13 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
+		[Route("edit/{tag}")]
 		public ActionResult Edit(string tag)
 		{
 			try
 			{
 				var model = _repository.Get(tag);
-				return View(model);
+				return View(model: model);
 			}
 			catch (KeyNotFoundException e)
 			{
@@ -38,6 +44,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 
 		[HttpPost]
+		[Route("edit/{tag}")]
 		[ValidateAntiForgeryToken]
 		public ActionResult Edit(string tag, string newTag)
 		{
@@ -57,7 +64,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 			{
 				ModelState.AddModelError("key", "New tag value cannot be empty.");
 
-				return View(tag);
+				return View(model: tag);
 			}
 
 			_repository.Edit(tag, newTag);
@@ -67,12 +74,13 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 
 		[HttpGet]
+		[Route("delete/{tag}")]
 		public ActionResult Delete(string tag)
 		{
 			try
 			{
 				var model = _repository.Get(tag);
-				return View(model);
+				return View(model: model);
 			}
 			catch (KeyNotFoundException e)
 			{
@@ -82,7 +90,8 @@ namespace MVCCMS.Areas.Admin.Controllers
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public ActionResult Delete(string tag, bool foo)
+		[Route("delete/{tag}")]
+		public ActionResult Delete(string tag, string foo)
 		{
 			try
 			{
