@@ -23,7 +23,7 @@ namespace MVCCMS.Data
 				.HasDatabaseGeneratedOption(DatabaseGeneratedOption.None);
 
 			modelBuilder.Entity<Post>()
-				.HasRequired(e => e.AuthorId);
+				.HasRequired(e => e.Author);
 		}
 	}
 }

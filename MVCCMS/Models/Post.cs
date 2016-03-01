@@ -34,7 +34,7 @@ namespace MVCCMS.Models
 			set { _tags = value; }
 		}
 
-		public string CombineTags
+		public string CombinedTags
 		{
 			get { return string.Join(",", _tags); }
 			set { _tags = value.Split(',').Select(s => s.Trim()).ToList(); }
