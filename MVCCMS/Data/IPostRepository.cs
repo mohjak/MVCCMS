@@ -12,6 +12,7 @@ namespace MVCCMS.Data
 		Post Get(string id);
 		void Edit(string id, Post udatedItem);
 		void Create(Post model);
+		void Delete(string id);
 		IEnumerable<Post> GetAll();
 	}
 }

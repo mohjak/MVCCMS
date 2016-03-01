@@ -10,8 +10,8 @@ namespace MVCCMS.Areas.Admin.Controllers
 {
 	[RouteArea("Admin")]
 	[RoutePrefix("post")]
-    public class PostController : Controller
-    {
+	public class PostController : Controller
+	{
 		private readonly IPostRepository _repository;
 
 		public PostController()
@@ -23,12 +23,12 @@ namespace MVCCMS.Areas.Admin.Controllers
 			_repository = repository;
 		}
 
-        // GET: Admin/Post
-        public ActionResult Index()
-        {
+		// GET: Admin/Post
+		public ActionResult Index()
+		{
 			var posts = _repository.GetAll();
-            return View(posts);
-        }
+			return View(posts);
+		}
 
 		// /admin/post/create
 		[HttpGet]
@@ -48,13 +48,14 @@ namespace MVCCMS.Areas.Admin.Controllers
 				return View(model);
 			}
 
-				if (string.IsNullOrWhiteSpace(model.Id))
-				{
-					model.Id = model.Title;
-				}
+			if (string.IsNullOrWhiteSpace(model.Id))
+			{
+				model.Id = model.Title;
+			}
 
-				model.Id = model.Id.MakeUrlFriendly();
-				model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
+			model.Id = model.Id.MakeUrlFriendly();
+			model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
+			model.Created = DateTime.Now;
 
 			try
 			{
@@ -67,7 +68,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 				ModelState.AddModelError("key", e);
 				return View(model);
 			}
-			
+
 		}
 
 		// /admin/post/edit/post-to-edit
@@ -75,7 +76,6 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("edit/{postId}")]
 		public ActionResult Edit(string postId)
 		{
-			// TODO: retrieve the model from the data store
 			var post = _repository.Get(postId);
 
 			if (post == null)
@@ -117,6 +117,37 @@ namespace MVCCMS.Areas.Admin.Controllers
 			{
 				ModelState.AddModelError("key", e);
 				return View(model);
+			}
+		}
+
+		// /admin/post/delete/post-to-edit
+		[HttpGet]
+		[Route("delete/{postId}")]
+		public ActionResult Delete(string postId)
+		{
+			var post = _repository.Get(postId);
+
+			if (post == null)
+			{
+				return HttpNotFound();
+			}
+			return View(post);
+		}
+
+		// /admin/post/delete/post-to-edit
+		[HttpPost]
+		[Route("delete/{postId}")]
+		public ActionResult Delete(string postId, string foo)
+		{
+			try
+			{
+				_repository.Delete(postId);
+
+				return RedirectToAction("Index");
+			}
+			catch (KeyNotFoundException e)
+			{
+				return HttpNotFound();
 			}
 		}
 

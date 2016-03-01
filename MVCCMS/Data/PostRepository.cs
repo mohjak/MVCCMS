@@ -61,5 +61,21 @@ namespace MVCCMS.Data
 					.OrderByDescending(post => post.Created).ToArray();
 			}
 		}
+
+		public void Delete(string id)
+		{
+			using (var db = new CmsContext())
+			{
+				var post = db.Posts.SingleOrDefault(p => p.Id == id);
+
+				if (post == null)
+				{
+					throw new KeyNotFoundException("The post with the id of " + id + " does not exist.");
+				}
+
+				db.Posts.Remove(post);
+				db.SaveChanges();
+			}
+		}
 	}
 }
