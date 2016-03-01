@@ -24,6 +24,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 
 		// GET: Admin/Post
+		[Route("")]
 		public ActionResult Index()
 		{
 			var posts = _repository.GetAll();
@@ -115,7 +116,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 			}
 			catch (Exception e)
 			{
-				ModelState.AddModelError("key", e);
+				ModelState.AddModelError(string.Empty, e.Message);
 				return View(model);
 			}
 		}

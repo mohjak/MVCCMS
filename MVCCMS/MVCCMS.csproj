@@ -139,6 +139,7 @@
     <Content Include="Areas\Admin\Views\Post\_postForm.cshtml" />
     <Content Include="Areas\Admin\Views\Shared\EditorTemplates\TagEditor.cshtml" />
     <Content Include="Areas\Admin\Views\Post\Index.cshtml" />
+    <Content Include="Areas\Admin\Views\Post\Delete.cshtml" />
     <None Include="Areas\Admin\Views\Shared\_AdminLayout.cshtml" />
     <Content Include="Global.asax" />
     <Content Include="Web.config" />
