@@ -35,8 +35,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("create")]
 		public ActionResult Create()
 		{
-			var model = new Post { Tags = new List<string> { "test-1", "test-2"} };
-			return View(model);
+			return View(new Post());
 		}
 
 		// /admin/post/create
@@ -49,11 +48,26 @@ namespace MVCCMS.Areas.Admin.Controllers
 				return View(model);
 			}
 
-			// TODO: update model in data store
+				if (string.IsNullOrWhiteSpace(model.Id))
+				{
+					model.Id = model.Title;
+				}
 
-			_repository.Create(model);
+				model.Id = model.Id.MakeUrlFriendly();
+				model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
 
-			return RedirectToAction("Index");
+			try
+			{
+				_repository.Create(model);
+
+				return RedirectToAction("Index");
+			}
+			catch (Exception e)
+			{
+				ModelState.AddModelError("key", e);
+				return View(model);
+			}
+			
 		}
 
 		// /admin/post/edit/post-to-edit
@@ -76,22 +90,34 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("edit/{postId}")]
 		public ActionResult Edit(string postId, Post model)
 		{
-			var post = _repository.Get(postId);
-
-			if (post == null)
-			{
-				return HttpNotFound();
-			}
-
 			if (!ModelState.IsValid)
 			{
 				return View(model);
 			}
 
-			// TODO: update model in data store
-			_repository.Edit(postId, post);
+			if (string.IsNullOrWhiteSpace(model.Id))
+			{
+				model.Id = model.Title;
+			}
 
-			return RedirectToAction("Index");
+			model.Id = model.Id.MakeUrlFriendly();
+			model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
+
+			try
+			{
+				_repository.Edit(postId, model);
+
+				return RedirectToAction("Index");
+			}
+			catch (KeyNotFoundException e)
+			{
+				return HttpNotFound();
+			}
+			catch (Exception e)
+			{
+				ModelState.AddModelError("key", e);
+				return View(model);
+			}
 		}
 
 	}
