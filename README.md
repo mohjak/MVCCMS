@@ -17,3 +17,5 @@ public static string MakeUrlFriendly(this string value)
 	return value;
 }
 ```
+## User Management
+### Add New User
