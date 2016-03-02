@@ -5,19 +5,18 @@ using MVCCMS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace MVCCMS.App_Start
 {
 	public class AuthDbConfig
 	{
-		public static void RegisterAdmin()
+		public async static Task RegisterAdmin()
 		{
-			using (var context = new CmsContext())
-			using (var userStore = new UserStore<CmsUser>(context))
-			using (var userManager = new UserManager<CmsUser>(userStore))
+			using(var users = new UserRepository())
 			{
-				var user = userStore.FindByNameAsync("admin").Result;
+				var user = users.GetUserByName("admin");
 
 				if (user == null)
 				{
@@ -28,7 +27,23 @@ namespace MVCCMS.App_Start
 						DisplayName = "Administrator"
 					};
 
-					userManager.Create(adminUser, "Passw0rd1234");
+					await users.CreateAsync(adminUser, "Passw0rd1234");
+				}
+			}
+
+			using (var roles = new RoleRepository())
+			{
+				if (roles.GetRoleByName("admin") == null)
+				{
+					roles.Create(new IdentityRole("admin"));
+				}
+				if (roles.GetRoleByName("editor") == null)
+				{
+					roles.Create(new IdentityRole("editor"));
+				}
+				if (roles.GetRoleByName("author") == null)
+				{
+					roles.Create(new IdentityRole("author"));
 				}
 			}
 		}
