@@ -1,4 +1,5 @@
 # MVCCMS
+This repository contains an implementation for an Asp.Net MVC Content Management System which has been built from scratch.
 ## Post Management
 ### Create New Post
 User can add new post initial version.
@@ -17,3 +18,5 @@ public static string MakeUrlFriendly(this string value)
 	return value;
 }
 ```
+## User Management
+### Add New User
