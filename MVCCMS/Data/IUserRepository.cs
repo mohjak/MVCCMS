@@ -9,10 +9,15 @@ namespace MVCCMS.Data
 {
 	public interface IUserRepository : IDisposable
 	{
-		CmsUser GetUserByName(string username);
-		IEnumerable<CmsUser> GetAllUsers();
+		
+		Task<CmsUser> GetUserByNameAsync(string username);
+		Task<IEnumerable<CmsUser>> GetAllUsersAsync();
 		Task CreateAsync(CmsUser user, string password);
-		void Delete(CmsUser user);
-		void Update(CmsUser user);
+		Task DeleteAsync(CmsUser user);
+		Task UpdateAsync(CmsUser user);
+		bool VerifyUserPassword(string hashedPassword, string providedPassword);
+		string HashPassword(string password);
+
+
 	}
 }

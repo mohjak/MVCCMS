@@ -1,6 +1,8 @@
-﻿using MVCCMS.Models;
+﻿using Microsoft.AspNet.Identity;
+using MVCCMS.Models;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Web;
@@ -18,14 +20,14 @@ namespace MVCCMS.Data
 			_manager = new CmsUserManager();
 		}
 
-		public CmsUser GetUserByName(string username)
+		public async Task<CmsUser> GetUserByNameAsync(string username)
 		{
-			return _store.FindByNameAsync(username).Result;
+			return await _store.FindByNameAsync(username);
 		}
 
-		public IEnumerable<CmsUser> GetAllUsers()
+		public async Task<IEnumerable<CmsUser>> GetAllUsersAsync()
 		{
-			return _store.Users.ToArray();
+			return await _store.Users.ToArrayAsync();
 		}
 
 		public async Task CreateAsync(CmsUser user, string password)
@@ -33,14 +35,24 @@ namespace MVCCMS.Data
 			await _manager.CreateAsync(user, password);
 		}
 
-		public void Delete(CmsUser user)
+		public async Task DeleteAsync(CmsUser user)
 		{
-			var result = _manager.DeleteAsync(user).Result;
+			await _manager.DeleteAsync(user);
 		}
 
-		public void Update(CmsUser user)
+		public async Task UpdateAsync(CmsUser user)
 		{
-			var result = _manager.UpdateAsync(user).Result;
+			await _manager.UpdateAsync(user);
+		}
+		
+		public bool VerifyUserPassword(string hashedPassword, string providedPassword)
+		{
+			return _manager.PasswordHasher.VerifyHashedPassword(hashedPassword, providedPassword) == 
+				PasswordVerificationResult.Success;
+		}
+		public string HashPassword(string password)
+		{
+			return _manager.PasswordHasher.HashPassword(password);
 		}
 
 		private bool _disposed = false;
@@ -55,5 +67,24 @@ namespace MVCCMS.Data
 			_disposed = true;
 		}
 
+		public CmsUser GetUserByName(string username)
+		{
+			throw new NotImplementedException();
+		}
+
+		public IEnumerable<CmsUser> GetAllUsers()
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Delete(CmsUser user)
+		{
+			throw new NotImplementedException();
+		}
+
+		public void Update(CmsUser user)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

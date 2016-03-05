@@ -13,8 +13,8 @@ namespace MVCCMS.Areas.Admin.Controllers
 {
 	[RouteArea("admin")]
 	[RoutePrefix("user")]
-    public class UserController : Controller
-    {
+	public class UserController : Controller
+	{
 		private readonly IUserRepository _userRepository;
 		private readonly IRoleRepository _roleRepository;
 		private readonly UserService _users;
@@ -25,22 +25,21 @@ namespace MVCCMS.Areas.Admin.Controllers
 			_roleRepository = new RoleRepository();
 			_users = new UserService(ModelState, _userRepository, _roleRepository);
 		}
-        // GET: Admin/User
+		// GET: Admin/User
 		[Route("")]
-        public ActionResult Index()
-        {
-			using (var manager = new CmsUserManager())
-			{
-				var users = manager.Users.ToList();
-				return View(users);
-			}
-        }
+		public async Task<ActionResult> Index()
+		{
+			var users = await _userRepository.GetAllUsersAsync();
+			return View(users);
+		}
 
 		[Route("create")]
 		[HttpGet]
-		public ActionResult Create()
+		public async Task<ActionResult> Create()
 		{
-			return View();
+			var model = new UserViewModel();
+
+			return View(model);
 		}
 
 		[Route("create")]
@@ -48,112 +47,53 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<ActionResult> Create(UserViewModel model)
 		{
-			if (await _users.CreateAsync(model))
+			var completed = await _users.CreateAsync(model);
+
+			if (completed)
 			{
 				return RedirectToAction("index");
 			}
-			else
-			{
-				return View();
-			}
+			return View(model);
 		}
 
 		[Route("edit/{username}")]
 		[HttpGet]
-		public ActionResult Edit(string username)
+		public async Task<ActionResult> Edit(string username)
 		{
-			using (var userSotre = new CmsUserStore())
-			using (var userManager = new CmsUserManager(userSotre))
-			{
-				var user = userSotre.FindByNameAsync(username).Result;
-				if (user == null)
-				{
-					return HttpNotFound();
-				}
+			var user = await _users.GetUserByNameAsync(username);
 
-				var viewModel = new UserViewModel
-				{
-					UserName = user.UserName,
-					Email = user.Email
-				};
-				return View(viewModel);
+			if (user == null)
+			{
+				return HttpNotFound();
 			}
+					
+			return View(username);
+			
 		}
 
 		[Route("edit/{username}")]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public ActionResult Edit(UserViewModel model)
+		public async Task<ActionResult> Edit(UserViewModel model)
 		{
-			using (var userSotre = new CmsUserStore())
-			using (var userManager = new CmsUserManager(userSotre))
+			var userUpdated = await _users.UpdateUser(model);
+
+			if (userUpdated)
 			{
-				var user = userSotre.FindByNameAsync(model.UserName).Result;
-				if (user == null)
-				{
-					return HttpNotFound();
-				}
-
-				if (!ModelState.IsValid)
-				{
-					return View(model);
-				}
-
-				if (!string.IsNullOrWhiteSpace(model.NewPassword))
-				{
-					if (string.IsNullOrWhiteSpace(model.CurrentPassword))
-					{
-						ModelState.AddModelError(string.Empty, "The current password must be supplied.");
-						return View(model);
-					}
-
-					var passwordVerified = userManager.PasswordHasher.VerifyHashedPassword(user.PasswordHash, model.CurrentPassword);
-					if (passwordVerified != PasswordVerificationResult.Success)
-					{
-						ModelState.AddModelError(string.Empty, "The current password does not match our records.");
-						return View(model);
-					}
-
-					var newHashPassword = userManager.PasswordHasher.HashPassword(model.NewPassword);
-					user.PasswordHash = newHashPassword;
-				}
-
-				user.Email = model.Email;
-				user.DisplayName = model.DisplayName;
-
-				var updatedResult = userManager.UpdateAsync(user).Result;
-
-				if (updatedResult.Succeeded)
-				{
-					return RedirectToAction("index");
-				}
-
-				else
-				{
-					ModelState.AddModelError(string.Empty, "An error occured. Please try again.");
-					return View(model);
-				}
-
+				return RedirectToAction("index");
 			}
+
+			return View(model);
 		}
 
 		[Route("delete/{username}")]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public ActionResult Delete(string username)
+		public async Task<ActionResult> Delete(string username)
 		{
-			using (var userSotre = new CmsUserStore())
-			using (var userManager = new CmsUserManager(userSotre))
-			{
-				var user = userSotre.FindByNameAsync(username).Result;
-				if (user == null)
-				{
-					return HttpNotFound();
-				}
+			await _users.DeleteAsync(username);
 
-				var deletedResult = userManager.DeleteAsync(user).Result;
-				return RedirectToAction("index");
-			}
+			return RedirectToAction("index");
 		}
 
 		private bool _isDisposed;

@@ -2,7 +2,9 @@
 using Microsoft.AspNet.Identity.EntityFramework;
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 
 namespace MVCCMS.Data
@@ -18,19 +20,19 @@ namespace MVCCMS.Data
 			_manager = new RoleManager<IdentityRole>(_store);
 		}
 
-		public IdentityRole GetRoleByName(string name)
+		public async Task<IdentityRole> GetRoleByNameAsync(string name)
 		{
-			return _store.FindByNameAsync(name).Result;
+			return await _store.FindByNameAsync(name);
 		}
 
-		public IEnumerable<IdentityRole> GetAllUsers()
+		public async Task<IEnumerable<IdentityRole>> GetAllRolesAsync()
 		{
-			return _store.Roles.ToArray();
+			return await _store.Roles.ToArrayAsync();
 		}
 
-		public void Create(IdentityRole role)
+		public async Task CreateAsync(IdentityRole role)
 		{
-			var result = _manager.Create(role);
+			await _manager.CreateAsync(role);
 		}
 
 		private bool _disposed = false;

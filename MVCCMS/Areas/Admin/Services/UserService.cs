@@ -24,6 +24,25 @@ namespace MVCCMS.Areas.Admin.Services
 			_roles = roleRepository;
 		}
 		
+		public async Task<UserViewModel> GetUserByNameAsync(string name)
+		{
+			var user = await _users.GetUserByNameAsync(name);
+
+			if (user == null)
+			{
+				return null;
+			}
+
+			var viewModel = new UserViewModel
+			{
+				UserName = user.UserName,
+				Email = user.Email,
+				DisplayName = user.DisplayName
+			};
+
+			return viewModel;
+		}
+
 		public async Task<bool> CreateAsync(UserViewModel model)
 		{
 			if (!_modelState.IsValid)
@@ -31,6 +50,14 @@ namespace MVCCMS.Areas.Admin.Services
 				return false;
 			}
 
+			var existingUser = await _users.GetUserByNameAsync(model.UserName);
+
+			if (existingUser != null)
+			{
+				_modelState.AddModelError(string.Empty, "The user already exits!");
+				return false;
+			}
+			
 			if (string.IsNullOrWhiteSpace(model.NewPassword))
 			{
 				_modelState.AddModelError(string.Empty, "You must type a password.");
@@ -46,6 +73,62 @@ namespace MVCCMS.Areas.Admin.Services
 
 			await _users.CreateAsync(newUser, model.NewPassword);
 			return true;
+		}
+
+		public async Task<bool> UpdateUser(UserViewModel model)
+		{
+			var user = await _users.GetUserByNameAsync(model.UserName);
+
+			if (user == null)
+			{
+				_modelState.AddModelError(string.Empty, "The specified user does not exist.");
+				return false;
+			}
+			if (!_modelState.IsValid)
+			{
+				return false;
+			}
+
+			if (!string.IsNullOrWhiteSpace(model.NewPassword))
+			{
+				if (!string.IsNullOrWhiteSpace(model.CurrentPassword))
+				{
+					_modelState.AddModelError(string.Empty, "The current password must be supplied.");
+					return false;
+				}
+
+				var passwordVerified = _users.VerifyUserPassword(user.PasswordHash, model.CurrentPassword);
+
+				if (!passwordVerified)
+				{
+					_modelState.AddModelError(string.Empty, "The current password does not match our records.");
+					return false;
+				}
+
+				var newHashPassword = _users.HashPassword(model.NewPassword);
+
+				user.PasswordHash = newHashPassword;
+			}
+
+			user.Email = model.Email;
+			user.DisplayName = model.DisplayName;
+
+			await _users.UpdateAsync(user);
+
+			return true;
+			
+		}
+
+		public async Task DeleteAsync(string username)
+		{
+			var user = await _users.GetUserByNameAsync(username);
+
+			if (user == null)
+			{
+				return;
+			}
+
+			await _users.DeleteAsync(user);
 		}
 	}
 }

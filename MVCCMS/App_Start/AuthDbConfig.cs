@@ -33,17 +33,17 @@ namespace MVCCMS.App_Start
 
 			using (var roles = new RoleRepository())
 			{
-				if (roles.GetRoleByName("admin") == null)
+				if (await roles.GetRoleByNameAsync("admin") == null)
 				{
-					roles.Create(new IdentityRole("admin"));
+					await roles.CreateAsync(new IdentityRole("admin"));
 				}
-				if (roles.GetRoleByName("editor") == null)
+				if (await roles.GetRoleByNameAsync("editor") == null)
 				{
-					roles.Create(new IdentityRole("editor"));
+					await roles.CreateAsync(new IdentityRole("editor"));
 				}
-				if (roles.GetRoleByName("author") == null)
+				if (await roles.GetRoleByNameAsync("author") == null)
 				{
-					roles.Create(new IdentityRole("author"));
+					await roles.CreateAsync(new IdentityRole("author"));
 				}
 			}
 		}
