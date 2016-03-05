@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using System.Threading.Tasks;
 
 namespace MVCCMS.Data
 {
@@ -27,5 +28,9 @@ namespace MVCCMS.Data
 			: base(userStore)
 		{ }
 
+		internal Task RemoveFromRoleAsync(string id, string[] roleNames)
+		{
+			throw new NotImplementedException();
+		}
 	}
 }

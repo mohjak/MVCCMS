@@ -55,6 +55,21 @@ namespace MVCCMS.Data
 			return _manager.PasswordHasher.HashPassword(password);
 		}
 
+		public async Task AddUserToRoleAsync(CmsUser user, string role)
+		{
+			await _manager.AddToRoleAsync(user.Id, role);
+		}
+
+		public async Task<IEnumerable<string>> GetRolesForUserAsync(CmsUser user)
+		{
+			return await _manager.GetRolesAsync(user.Id);
+		}
+
+		public async Task RemoveUserFromRoleAsync(CmsUser user, params string[] roleNames)
+		{
+			await _manager.RemoveFromRoleAsync(user.Id, roleNames);
+		}
+
 		private bool _disposed = false;
 		public void Dispose()
 		{
@@ -65,26 +80,6 @@ namespace MVCCMS.Data
 			}
 
 			_disposed = true;
-		}
-
-		public CmsUser GetUserByName(string username)
-		{
-			throw new NotImplementedException();
-		}
-
-		public IEnumerable<CmsUser> GetAllUsers()
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Delete(CmsUser user)
-		{
-			throw new NotImplementedException();
-		}
-
-		public void Update(CmsUser user)
-		{
-			throw new NotImplementedException();
 		}
 	}
 }

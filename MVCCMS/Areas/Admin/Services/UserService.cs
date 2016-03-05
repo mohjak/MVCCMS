@@ -40,6 +40,11 @@ namespace MVCCMS.Areas.Admin.Services
 				DisplayName = user.DisplayName
 			};
 
+			var userRoles = await _users.GetRolesForUserAsync(user);
+
+			viewModel.SelectedRole = userRoles.Count() > 1 ?
+				userRoles.FirstOrDefault() : userRoles.SingleOrDefault();
+			viewModel.LoadUserRoles(await _roles.GetAllRolesAsync());
 			return viewModel;
 		}
 
@@ -72,6 +77,7 @@ namespace MVCCMS.Areas.Admin.Services
 			};
 
 			await _users.CreateAsync(newUser, model.NewPassword);
+			await _users.AddUserToRoleAsync(newUser, model.SelectedRole);
 			return true;
 		}
 
@@ -114,6 +120,12 @@ namespace MVCCMS.Areas.Admin.Services
 			user.DisplayName = model.DisplayName;
 
 			await _users.UpdateAsync(user);
+
+			var roles = await _users.GetRolesForUserAsync(user);
+
+			await _users.RemoveUserFromRoleAsync(user, roles.ToArray());
+
+			await _users.AddUserToRoleAsync(user, model.SelectedRole);
 
 			return true;
 			

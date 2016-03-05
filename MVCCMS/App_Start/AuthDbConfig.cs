@@ -16,7 +16,7 @@ namespace MVCCMS.App_Start
 		{
 			using(var users = new UserRepository())
 			{
-				var user = users.GetUserByName("admin");
+				var user = await users.GetUserByNameAsync("admin");
 
 				if (user == null)
 				{
