@@ -68,7 +68,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 				return HttpNotFound();
 			}
 					
-			return View(username);
+			return View(user);
 			
 		}
 

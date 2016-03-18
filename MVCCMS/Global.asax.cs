@@ -12,12 +12,12 @@ namespace MVCCMS
 {
     public class MvcApplication : System.Web.HttpApplication
     {
-        protected void Application_Start()
+        protected async void Application_Start()
         {
             RouteConfig.RegisterRoutes(RouteTable.Routes);
 			AreaRegistration.RegisterAllAreas();
 
-			AuthDbConfig.RegisterAdmin();
+			await AuthDbConfig.RegisterAdmin();
 
 			ModelBinders.Binders.Add(typeof(Post), new PostModelBinder());
         }

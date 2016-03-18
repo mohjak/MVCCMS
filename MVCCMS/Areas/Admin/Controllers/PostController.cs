@@ -8,7 +8,7 @@ using System.Web.Mvc;
 
 namespace MVCCMS.Areas.Admin.Controllers
 {
-	[RouteArea("Admin")]
+	[RouteArea("admin")]
 	[RoutePrefix("post")]
 	public class PostController : Controller
 	{
@@ -57,7 +57,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 			model.Id = model.Id.MakeUrlFriendly();
 			model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
 			model.Created = DateTime.Now;
-			model.AuthorId = "9647a183-9cfd-4aab-893d-2a8a18601bf2";
+			model.AuthorId = "12c035a5-412e-433e-ab18-516420075265";
 			try
 			{
 				_repository.Create(model);
