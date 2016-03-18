@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,5 +20,7 @@ namespace MVCCMS.Data
 		Task<IEnumerable<string>> GetRolesForUserAsync(CmsUser user);
 		Task AddUserToRoleAsync(CmsUser newUser, string selectedRole);
 		Task RemoveUserFromRoleAsync(CmsUser user, params string[] roleNames);
+		Task<CmsUser> GetLoginUserAsync(string userName, string password);
+		Task<ClaimsIdentity> CreateIdentityAsync(CmsUser user);
 	}
 }

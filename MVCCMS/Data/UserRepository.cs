@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using System.Web;
 
@@ -44,10 +45,10 @@ namespace MVCCMS.Data
 		{
 			await _manager.UpdateAsync(user);
 		}
-		
+
 		public bool VerifyUserPassword(string hashedPassword, string providedPassword)
 		{
-			return _manager.PasswordHasher.VerifyHashedPassword(hashedPassword, providedPassword) == 
+			return _manager.PasswordHasher.VerifyHashedPassword(hashedPassword, providedPassword) ==
 				PasswordVerificationResult.Success;
 		}
 		public string HashPassword(string password)
@@ -70,6 +71,15 @@ namespace MVCCMS.Data
 			await _manager.RemoveFromRoleAsync(user.Id, roleNames);
 		}
 
+		public async Task<CmsUser> GetLoginUserAsync(string userName, string password)
+		{
+			return await _manager.FindAsync(userName, password);
+		}
+
+		public async Task<ClaimsIdentity> CreateIdentityAsync(CmsUser user)
+		{
+			return await _manager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
+		}
 		private bool _disposed = false;
 		public void Dispose()
 		{
