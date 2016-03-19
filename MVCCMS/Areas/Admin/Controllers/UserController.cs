@@ -13,6 +13,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 {
 	[RouteArea("admin")]
 	[RoutePrefix("user")]
+	[Authorize]
 	public class UserController : Controller
 	{
 		private readonly IUserRepository _userRepository;
@@ -27,6 +28,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		}
 		// GET: Admin/User
 		[Route("")]
+		[Authorize(Roles ="admin")]
 		public async Task<ActionResult> Index()
 		{
 			var users = await _userRepository.GetAllUsersAsync();
@@ -35,6 +37,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 
 		[Route("create")]
 		[HttpGet]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult> Create()
 		{
 			var model = new UserViewModel();
@@ -46,6 +49,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("create")]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult> Create(UserViewModel model)
 		{
 			var completed = await _users.CreateAsync(model);
@@ -59,8 +63,17 @@ namespace MVCCMS.Areas.Admin.Controllers
 
 		[Route("edit/{username}")]
 		[HttpGet]
+		[Authorize(Roles = "admin, editor, author")]
 		public async Task<ActionResult> Edit(string username)
 		{
+
+			var currentUser = User.Identity.Name;
+
+			if (!User.IsInRole("admin") && 
+				!string.Equals(currentUser,username, StringComparison.CurrentCultureIgnoreCase))
+			{
+				return new HttpUnauthorizedResult();
+			}
 			var user = await _users.GetUserByNameAsync(username);
 
 			if (user == null)
@@ -75,13 +88,27 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("edit/{username}")]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
-		public async Task<ActionResult> Edit(UserViewModel model)
+		[Authorize(Roles = "admin, editor, author")]
+		public async Task<ActionResult> Edit(UserViewModel model, string username)
 		{
+			var currentUser = User.Identity.Name;
+			var isAdmin = User.IsInRole("admin");
+
+			if (!isAdmin &&
+				!string.Equals(currentUser, username, StringComparison.CurrentCultureIgnoreCase))
+			{
+				return new HttpUnauthorizedResult();
+			}
+
 			var userUpdated = await _users.UpdateUser(model);
 
 			if (userUpdated)
 			{
-				return RedirectToAction("index");
+				if (isAdmin)
+				{
+					return RedirectToAction("index");
+				}
+				return RedirectToAction("index", "admin");
 			}
 
 			return View(model);
@@ -90,6 +117,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		[Route("delete/{username}")]
 		[HttpPost]
 		[ValidateAntiForgeryToken]
+		[Authorize(Roles = "admin")]
 		public async Task<ActionResult> Delete(string username)
 		{
 			await _users.DeleteAsync(username);

@@ -13,6 +13,7 @@ namespace MVCCMS.Data
 		void Edit(string id, Post udatedItem);
 		void Create(Post model);
 		void Delete(string id);
-		IEnumerable<Post> GetAll();
+		Task<IEnumerable<Post>> GetAllAsync();
+		Task<IEnumerable<Post>> GetPostsByAuthorAsync(string authorId);
 	}
 }

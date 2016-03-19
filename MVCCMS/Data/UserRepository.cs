@@ -80,6 +80,7 @@ namespace MVCCMS.Data
 		{
 			return await _manager.CreateIdentityAsync(user, DefaultAuthenticationTypes.ApplicationCookie);
 		}
+
 		private bool _disposed = false;
 		public void Dispose()
 		{

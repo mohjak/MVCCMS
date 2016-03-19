@@ -3,6 +3,7 @@ using MVCCMS.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.Mvc;
 
@@ -10,25 +11,35 @@ namespace MVCCMS.Areas.Admin.Controllers
 {
 	[RouteArea("admin")]
 	[RoutePrefix("post")]
+	[Authorize]
 	public class PostController : Controller
 	{
 		private readonly IPostRepository _repository;
+		private readonly IUserRepository _users;
 
 		public PostController()
-			: this(new PostRepository())
+			: this(new PostRepository(), new UserRepository())
 		{ }
 
-		public PostController(IPostRepository repository)
+		public PostController(IPostRepository repository, IUserRepository userRepository)
 		{
 			_repository = repository;
+			_users = userRepository;
 		}
 
 		// GET: Admin/Post
 		[Route("")]
-		public ActionResult Index()
+		public async Task<ActionResult> Index()
 		{
-			var posts = _repository.GetAll();
+			if (!User.IsInRole("author"))
+			{
+				return View(await _repository.GetAllAsync());
+			}
+
+			var user = await GetLoggedInUser();
+			var posts = await _repository.GetPostsByAuthorAsync(user.Id);
 			return View(posts);
+
 		}
 
 		// /admin/post/create
@@ -42,12 +53,15 @@ namespace MVCCMS.Areas.Admin.Controllers
 		// /admin/post/create
 		[HttpPost]
 		[Route("create")]
-		public ActionResult Create(Post model)
+		public async Task<ActionResult> Create(Post model)
 		{
 			if (!ModelState.IsValid)
 			{
 				return View(model);
 			}
+
+			var user = await GetLoggedInUser();
+
 
 			if (string.IsNullOrWhiteSpace(model.Id))
 			{
@@ -57,7 +71,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 			model.Id = model.Id.MakeUrlFriendly();
 			model.Tags = model.Tags.Select(tag => tag.MakeUrlFriendly()).ToList();
 			model.Created = DateTime.Now;
-			model.AuthorId = "12c035a5-412e-433e-ab18-516420075265";
+			model.AuthorId = user.Id;
 			try
 			{
 				_repository.Create(model);
@@ -75,7 +89,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		// /admin/post/edit/post-to-edit
 		[HttpGet]
 		[Route("edit/{postId}")]
-		public ActionResult Edit(string postId)
+		public async Task<ActionResult> Edit(string postId)
 		{
 			var post = _repository.Get(postId);
 
@@ -83,19 +97,43 @@ namespace MVCCMS.Areas.Admin.Controllers
 			{
 				return HttpNotFound();
 			}
+
+			if (User.IsInRole("author"))
+			{
+				var user = await GetLoggedInUser();
+				if (post.AuthorId != user.Id)
+				{
+					return new HttpUnauthorizedResult();
+				}
+			}
 			return View(post);
 		}
 
 		// /admin/post/edit/post-to-edit
 		[HttpPost]
 		[Route("edit/{postId}")]
-		public ActionResult Edit(string postId, Post model)
+		public async Task<ActionResult> Edit(string postId, Post model)
 		{
 			if (!ModelState.IsValid)
 			{
 				return View(model);
 			}
 
+			if (User.IsInRole("author"))
+			{
+				var user = await GetLoggedInUser();
+				var post = _repository.Get(postId);
+
+				try
+				{
+					if (post.AuthorId != user.Id)
+					{
+						return new HttpUnauthorizedResult();
+					}
+				}
+				catch { }
+				
+			}
 			if (string.IsNullOrWhiteSpace(model.Id))
 			{
 				model.Id = model.Title;
@@ -124,6 +162,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		// /admin/post/delete/post-to-edit
 		[HttpGet]
 		[Route("delete/{postId}")]
+		[Authorize(Roles = "admin, editor")]
 		public ActionResult Delete(string postId)
 		{
 			var post = _repository.Get(postId);
@@ -138,6 +177,7 @@ namespace MVCCMS.Areas.Admin.Controllers
 		// /admin/post/delete/post-to-edit
 		[HttpPost]
 		[Route("delete/{postId}")]
+		[Authorize(Roles = "admin, editor")]
 		public ActionResult Delete(string postId, string foo)
 		{
 			try
@@ -152,5 +192,21 @@ namespace MVCCMS.Areas.Admin.Controllers
 			}
 		}
 
+		private async Task<CmsUser> GetLoggedInUser()
+		{
+			return await _users.GetUserByNameAsync(User.Identity.Name);
+		}
+
+		private bool _isDisposed;
+		protected override void Dispose(bool disposing)
+		{
+			if (!_isDisposed)
+			{
+				_users.Dispose();
+			}
+			_isDisposed = true;
+
+			base.Dispose(disposing);
+		}
 	}
 }
