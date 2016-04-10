@@ -14,23 +14,6 @@ namespace MVCCMS.App_Start
 	{
 		public async static Task RegisterAdmin()
 		{
-			using(var users = new UserRepository())
-			{
-				var user = await users.GetUserByNameAsync("admin");
-
-				if (user == null)
-				{
-					var adminUser = new CmsUser
-					{
-						UserName = "admin",
-						Email = "admin@cms.com",
-						DisplayName = "Administrator"
-					};
-
-					await users.CreateAsync(adminUser, "Passw0rd1234");
-				}
-			}
-
 			using (var roles = new RoleRepository())
 			{
 				if (await roles.GetRoleByNameAsync("admin") == null)
@@ -46,6 +29,52 @@ namespace MVCCMS.App_Start
 					await roles.CreateAsync(new IdentityRole("author"));
 				}
 			}
+
+			using (var users = new UserRepository())
+			{
+				var user1 = await users.GetUserByNameAsync("admin");
+
+				if (user1 == null)
+				{
+					var adminUser = new CmsUser
+					{
+						UserName = "admin",
+						Email = "admin@cms.com",
+						DisplayName = "Administrator"
+					};
+
+					await users.CreateAsync(adminUser, "Passw0rd1234");
+					await users.AddUserToRoleAsync(adminUser, "admin");
+				}
+
+				var user2 = await users.GetUserByNameAsync("author");
+				if (user2 == null)
+				{
+					var authorUser = new CmsUser()
+					{
+						UserName = "author",
+						Email = "author@cms.com",
+						DisplayName = "Author"
+					};
+
+					await users.CreateAsync(authorUser, "P@ssw0rd1234");
+					await users.AddUserToRoleAsync(authorUser, "author");
+				}
+
+				var user3 = await users.GetUserByNameAsync("editor");
+				if (user3 == null)
+				{
+					var editorUser = new CmsUser()
+					{
+						UserName = "editor",
+						Email = "editor@cms.com",
+						DisplayName = "Editor"
+					};
+
+					await users.CreateAsync(editorUser, "P@ssw0rd1234");
+					await users.AddUserToRoleAsync(editorUser, "author");
+				}
+			}		
 		}
 	}
 }

@@ -18,7 +18,7 @@ namespace MVCCMS.Areas.Admin.ViewModels
 		public string Email { get; set; }
 
 		[Required]
-		[Display(Name = "Display Password")]
+		[Display(Name = "Display Name")]
 		public string DisplayName { get; set; }
 
 		[Display(Name = "Current Password")]
